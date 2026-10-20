@@ -62,4 +62,17 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | RFC-RISCO-02 | docs/RFC.md | Riscos | Vazamento de secret por cliente (já ocorreu) | TRANSCRICAO | [09:22] |
 | RFC-OE-01 | docs/RFC.md | Restrição | Email fallback e dashboard visual estão fora de escopo | TRANSCRICAO | [09:37], [09:39]-[09:40] |
 
-**Cobertura:** linhas cobrem os 6 ADRs e o RFC. O tracker será atualizado conforme PRD, FDD e README forem produzidos (varredura no fim de cada documento).
+| FDD-FLUXO-01 | docs/FDD.md | Requisito Funcional | Evento criado na outbox na mesma transação do changeStatus | TRANSCRICAO | [09:40]-[09:41] |
+| FDD-FLUXO-02 | docs/FDD.md | Requisito Funcional | Worker processa eventos em polling de 2s | TRANSCRICAO | [09:09]-[09:11] |
+| FDD-FLUXO-03 | docs/FDD.md | Requisito Funcional | Retry 5 tentativas 1m/5m/30m/2h/12h, depois DLQ | TRANSCRICAO | [09:15]-[09:17] |
+| FDD-FLUXO-04 | docs/FDD.md | Requisito Funcional | Filtro de eventos por status na inserção da outbox | TRANSCRICAO | [09:33]-[09:34] |
+| FDD-CONTRATO-01 | docs/FDD.md | Requisito Funcional | POST /api/v1/webhooks (CRUD criação) | TRANSCRICAO | [09:31] |
+| FDD-CONTRATO-02 | docs/FDD.md | Requisito Funcional | PATCH/DELETE/GET /api/v1/webhooks (CRUD) | TRANSCRICAO | [09:33] |
+| FDD-CONTRATO-03 | docs/FDD.md | Requisito Funcional | GET /api/v1/webhooks/:id/deliveries (histórico) | TRANSCRICAO | [09:34] |
+| FDD-CONTRATO-04 | docs/FDD.md | Requisito Funcional | POST /api/v1/admin/webhooks/dead-letter/:id/replay | TRANSCRICAO | [09:18], [09:35] |
+| FDD-ERRO-01 | docs/FDD.md | Restrição | Erros com prefixo WEBHOOK_* | TRANSCRICAO | [09:28]-[09:29] |
+| FDD-ERRO-02 | docs/FDD.md | Restrição | URL http rejeitada (https obrigatório) | TRANSCRICAO | [09:23] |
+| FDD-RESIL-01 | docs/FDD.md | Requisito Não Funcional | Timeout 10s por tentativa | TRANSCRICAO | [09:42] |
+| FDD-OBS-01 | docs/FDD.md | Requisito Não Funcional | Observabilidade: logs Pino, métricas de entrega, tracing | TRANSCRICAO | [09:29] (padrão existente) |
+
+**Cobertura:** linhas cobrem os 6 ADRs, o RFC e o FDD. O tracker será atualizado quando PRD e README forem produzidos.
