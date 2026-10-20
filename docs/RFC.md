@@ -7,7 +7,7 @@
 | **Autor** | Tech Lead |
 | **Status** | Draft — submetido para revisão |
 | **Data** | Quinta-feira (data não especificada na transcrição) |
-| **Revisores** | PM, Eng. Pleno (Pedidos), Eng. Sênior (Plataforma), Eng. de Segurança |
+| **Revisores** | Larissa (Tech Lead), Marcos (PM), Bruno (Eng. Pleno — Pedidos), Diego (Eng. Sênior — Plataforma), Sofia (Eng. Segurança) |
 
 ## Resumo Executivo (TL;DR)
 
@@ -83,13 +83,9 @@ Dois pontos foram levantados na reunião mas **não foram decididos**, ficando p
 
 Foi levantado na reunião o cenário de um cliente com muitos pedidos mudando de status em um curto intervalo ("50 pedidos mudando em um minuto" — o cliente receberia 50 chamadas seguidas). A equipe decidiu **observar e implementar se virar problema**, sem definição de limite no momento ([09:38]-[09:39]).
 
-*Recomendação para revisão:* considerar implementar um limitador de taxa (ex: máximo de N chamadas por minuto por `customer_id`) antes do lançamento, ou preparar a outbox para aceitar esse campo futuramente.
-
 ### 2. Escalabilidade para múltiplos workers
 
 Enquanto houver um único worker, a ordenação dos eventos é implícita por `order_id`. Foi levantada a possibilidade de escalar para múltiplos workers no futuro; as opções surgidas na discussão foram particionamento por `order_id` ou lock pessimista, mas a decisão foi **adiada** para quando houver necessidade ([09:12]-[09:13]).
-
-*Recomendação para revisão:* avaliar se a outbox deve já incluir um campo `shard_key` (derivado de `order_id`) para facilitar o particionamento futuro sem migração de dados.
 
 > As demais questões levantadas na reunião foram **fechadas como fora de escopo**: notificação por email quando o webhook falha ([09:37]) e dashboard visual para clientes ([09:39]-[09:40]) ficam para fases futuras.
 
@@ -103,11 +99,11 @@ Enquanto houver um único worker, a ordenação dos eventos é implícita por `o
 
 ### Riscos
 
-| Risco | Probabilidade | Impacto | Mitigação |
-|---|---|---|---|
-| Cliente não implementa deduplicação e processa evento duplicado | Média | Moderado (pode gerar suporte) | Documentar claramente no portal do desenvolvedor; incluir `X-Event-Id` em toda comunicação |
-| Vazamento de secret de webhook por parte do cliente | Baixa (mas já ocorreu) | Alto | Secret por endpoint (limita dano); grace period de 24h para rotação ([09:22]) |
-| Worker processa fora de ordem se múltiplas instâncias forem iniciadas | Baixa (single-worker inicial) | Moderado | Single-worker é default; ordenação explícita por `created_at`; campo `order_id` para agrupamento |
+| Risco | Mitigação |
+|---|---|
+| Cliente não implementa deduplicação e processa evento duplicado | Documentar claramente no portal do desenvolvedor; incluir `X-Event-Id` em toda comunicação ([09:26]) |
+| Vazamento de secret de webhook por parte do cliente | Secret por endpoint (limita dano); grace period de 24h para rotação ([09:21]-[09:22]) |
+| Worker processa fora de ordem se múltiplas instâncias forem iniciadas | Single-worker é default; ordenação explícita por `created_at`; campo `order_id` para agrupamento ([09:12]-[09:13]) |
 
 ### Decisões relacionadas
 
