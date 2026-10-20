@@ -6,7 +6,7 @@ Aceito
 
 ## Contexto
 
-A aplicação OMS existente tem padrões bem definidos de arquitetura e tratamento de erros. A feature de webhooks poderia ser implementada com bibliotecas ou abordagens diferentes, mas a reunião discutiu explicitamente que seguir os padrões já estabelecidos reduz surpresa, acelera a implementação e mantém a legibilidade do código para o time ([09:27]-[09:30]).
+A aplicação OMS existente tem padrões bem definidos de arquitetura e tratamento de erros. A feature de webhooks poderia ser implementada com bibliotecas ou abordagens diferentes, mas foi definido explicitamente que seguir os padrões já estabelecidos reduz surpresa, acelera a implementação e mantém a legibilidade do código para o time ([09:27]-[09:30]).
 
 Bruno listou os padrões existentes e propôs reutilizá-los ([09:27]-[09:29]), com anuência de Larissa, Diego, e Sofia durante a discussão.
 

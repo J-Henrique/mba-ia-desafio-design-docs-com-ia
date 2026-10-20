@@ -13,7 +13,7 @@
 
 Este documento propõe a adição de um sistema de **webhooks de notificação de pedidos** ao Order Management System (OMS). Três clientes B2B (Atlas Comercial, MaxDistribuição e Nova Cargo) exigem ser notificados quando o status de seus pedidos muda, em vez de precisar consultar a API repetidamente ([09:00] PM).
 
-A solução proposta usa o **padrão Outbox no MySQL**: eventos são registrados na mesma transação da mudança de status, e um worker separado os entrega via HTTP com garantia at-least-once. A segurança usa **HMAC-SHA256** com secret por endpoint. O conjunto de decisões foi fechado em reunião entre tech lead, PM, engenheiros e segurança.
+A solução proposta usa o **padrão Outbox no MySQL**: eventos são registrados na mesma transação da mudança de status, e um worker separado os entrega via HTTP com garantia at-least-once. A segurança usa **HMAC-SHA256** com secret por endpoint. O conjunto de decisões foi fechado pelo time (tech lead, PM, engenheiros e segurança).
 
 ## Contexto e Problema
 
@@ -44,7 +44,7 @@ A arquitetura tem três camadas:
 
 ### Decisões arquiteturais fechadas
 
-As decisões foram discutidas e fechadas durante a reunião. Cada uma está registrada como ADR no pacote:
+As decisões foram discutidas e fechadas pelo time. Cada uma está registrada como ADR no pacote:
 
 | Decisão | Resumo | ADR |
 |---|---|---|
@@ -61,7 +61,7 @@ A alteração crítica é no `changeStatus` do `OrderService`: a inserção na w
 
 ## Alternativas Consideradas
 
-A reunião discutiu e descartou as seguintes abordagens antes de fechar a proposta acima:
+As seguintes abordagens foram discutidas e descartadas antes de fechar a proposta acima:
 
 ### 1. Webhook síncrono dentro do service de orders
 
@@ -77,17 +77,17 @@ Usar trigger do banco para avisar o worker quando um novo evento fosse inserido.
 
 ## Questões em Aberto
 
-Dois pontos foram levantados na reunião mas **não foram decididos**, ficando para avaliação futura:
+Dois pontos foram levantados mas **não foram decididos**, ficando para avaliação futura:
 
 ### 1. Rate limiting de envio por cliente
 
-Foi levantado na reunião o cenário de um cliente com muitos pedidos mudando de status em um curto intervalo ("50 pedidos mudando em um minuto" — o cliente receberia 50 chamadas seguidas). A equipe decidiu **observar e implementar se virar problema**, sem definição de limite no momento ([09:38]-[09:39]).
+Foi levantado o cenário de um cliente com muitos pedidos mudando de status em um curto intervalo ("50 pedidos mudando em um minuto" — o cliente receberia 50 chamadas seguidas). A equipe decidiu **observar e implementar se virar problema**, sem definição de limite no momento ([09:38]-[09:39]).
 
 ### 2. Escalabilidade para múltiplos workers
 
 Enquanto houver um único worker, a ordenação dos eventos é implícita por `order_id`. Foi levantada a possibilidade de escalar para múltiplos workers no futuro; as opções surgidas na discussão foram particionamento por `order_id` ou lock pessimista, mas a decisão foi **adiada** para quando houver necessidade ([09:12]-[09:13]).
 
-> As demais questões levantadas na reunião foram **fechadas como fora de escopo**: notificação por email quando o webhook falha ([09:37]) e dashboard visual para clientes ([09:39]-[09:40]) ficam para fases futuras.
+> Outras questões levantadas foram **fechadas como fora de escopo**: notificação por email quando o webhook falha ([09:37]) e dashboard visual para clientes ([09:39]-[09:40]) ficam para fases futuras.
 
 ## Impacto e Riscos
 

@@ -6,7 +6,7 @@ Aceito
 
 ## Contexto
 
-Ao entregar eventos de webhook, é necessário definir qual garantia de entrega o sistema oferece. A reunião contrastou duas abordagens: garantir entrega exata única (**exactly-once**) ou garantir que o evento chegue pelo menos uma vez (**at-least-once**), aceitando duplicatas ([09:24]-[09:25] Diego).
+Ao entregar eventos de webhook, é necessário definir qual garantia de entrega o sistema oferece. Foram contrastadas duas abordagens: garantir entrega exata única (**exactly-once**) ou garantir que o evento chegue pelo menos uma vez (**at-least-once**), aceitando duplicatas ([09:24]-[09:25] Diego).
 
 Garantir exactly-once exigiria coordenação entre os dois lados e é muito mais complexo; at-least-once resolve a maioria esmagadora dos casos ([09:25] Diego). A pergunta central, levantada por Bruno, foi: como o cliente identifica eventos repetidos e consegue deduplicá-los? ([09:25])
 
@@ -24,7 +24,7 @@ O cliente é responsável por:
 2. Manter um registro dos IDs que já processou.
 3. Ignorar eventos cujo `X-Event-Id` já tenha sido processado.
 
-O formato do header, definido na reunião ([09:44]), inclui:
+O formato do header definido ([09:44]) inclui:
 - `X-Event-Id`: UUID do evento
 - `X-Signature`: assinatura HMAC-SHA256
 - `X-Timestamp`: timestamp ISO 8601 do envio

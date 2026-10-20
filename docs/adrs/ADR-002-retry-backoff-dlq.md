@@ -10,7 +10,7 @@ Quando o worker tenta entregar um webhook e o cliente está fora do ar ou respon
 
 Além disso, eventos que falham definitivamente precisam ser preservados para auditoria e reprocessamento manual, sem poluir a tabela de eventos pendentes ([09:15] Diego).
 
-A reunião discutiu diferentes números de tentativas (3 vs. 5) e onde armazenar eventos que esgotaram as tentativas ([09:15]-[09:18]).
+Foram discutidos diferentes números de tentativas (3 vs. 5) e onde armazenar eventos que esgotaram as tentativas ([09:15]-[09:18]).
 
 ## Decisão
 

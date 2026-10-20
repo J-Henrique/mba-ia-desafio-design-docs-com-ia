@@ -8,7 +8,7 @@ Aceito
 
 Os eventos de webhook são enviados para endpoints HTTP fora da infraestrutura da empresa (servidores dos clientes B2B). O cliente precisa conseguir validar que a requisição veio realmente do sistema OMS e que o payload não foi adulterado durante o trânsito ([09:19] Sofia).
 
-A reunião discutiu também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks ([09:21] Sofia). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas ([09:21] Diego, Sofia).
+Foi discutido também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks ([09:21] Sofia). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas ([09:21] Diego, Sofia).
 
 ## Decisão
 

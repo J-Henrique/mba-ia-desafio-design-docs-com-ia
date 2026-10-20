@@ -68,7 +68,7 @@ Baseado na tabela de tentativas:
 
 ## 5. Contratos Públicos
 
-Endpoint para cada operação, com exemplos de request/response e status codes. Os nomes de rotas seguem o padrão `/api/v1` existente (`src/routes/index.ts`); paths não especificados na reunião são detalhe de implementação deste FDD.
+Endpoint para cada operação, com exemplos de request/response e status codes. Os nomes de rotas seguem o padrão `/api/v1` existente (`src/routes/index.ts`); paths não especificados na definição são detalhe de implementação deste FDD.
 
 ### 5.1 `POST /api/v1/webhooks` — criar webhook
 
@@ -127,7 +127,7 @@ Response `204 No Content`. Status: `204`, `404`.
 
 ### 5.4 `GET /api/v1/customers/:customerId/webhooks` — listar webhooks de um cliente
 
-O `customerId` vai no path: a regra definida na reunião é que o identificador do cliente é passado no **body ou no path**, nunca derivado do JWT ([09:32]).
+O `customerId` vai no path: o identificador do cliente é passado no **body ou no path**, nunca derivado do JWT ([09:32]).
 
 Request:
 ```http
@@ -186,7 +186,7 @@ Status: `200`, `404`, `401`.
 
 É o contrato real consumido pelos clientes — como a feature **chama** o endpoint do cliente. Payload enviado no corpo da requisição `POST` do worker para `webhook.url`.
 
-**Payload** (definido na reunião, [09:43]):
+**Payload** ([09:43]):
 ```json
 {
   "event_id": "uuid-do-evento",
@@ -227,7 +227,7 @@ Status: `200` recolocado na outbox, `403` role diferente de ADMIN, `404` DLQ ite
 
 ## 6. Matriz de Erros Previstos (padrão `WEBHOOK_*`)
 
-A reunião definiu o *padrão* `WEBHOOK_*` e deu exemplos ([09:28]-[09:29]): `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`. Os demais códigos abaixo seguem o mesmo padrão e as subclasses de `AppError` existentes, mas **não foram citados literalmente na reunião** — são derivação deste FDD a partir da lógica dos endpoints.
+O *padrão* `WEBHOOK_*` foi definido com exemplos ([09:28]-[09:29]): `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`. Os demais códigos abaixo seguem o mesmo padrão e as subclasses de `AppError` existentes, mas **não foram citados literalmente** — são derivação deste FDD a partir da lógica dos endpoints.
 
 | Código | HTTP | Quando | Origem |
 |---|---|---|---|
@@ -253,7 +253,7 @@ Todos seguem o formato do `AppError` (`message`, `statusCode`, `errorCode`, `det
 
 ## 8. Observabilidade
 
-A reunião definiu o **reuso do logger Pino existente** ([09:29]) e o padrão de logs com request id já presente na aplicação (via `src/middlewares/request-logger.middleware.ts`). O detalhamento abaixo (métricas e logs estruturados) é derivação deste FDD a partir desses padrões; nomes/campos exatos são sugestão de implementação, não decisão da reunião.
+Foi definido o **reuso do logger Pino existente** ([09:29]) e o padrão de logs com request id já presente na aplicação (via `src/middlewares/request-logger.middleware.ts`). O detalhamento abaixo (métricas e logs estruturados) é derivação deste FDD a partir desses padrões; nomes/campos exatos são sugestão de implementação, não decisão fechada.
 
 ### Métricas
 
@@ -264,9 +264,9 @@ Sugeridas para monitoramento das entregas (a aplicar conforme infraestrutura de 
 
 ### Logs
 
-- Continuar usando o logger Pino existente (`src/shared/logger/index.ts`) — decisão da reunião ([09:29]).
+- Usar o logger Pino existente (`src/shared/logger/index.ts`) — decisão do time ([09:29]).
 - Campos estruturados sugeridos nos eventos de entrega: `eventId`, `webhookId`, `customerId`, `status`, `attempt`, `durationMs`, `responseStatus`.
-- **Auditoria obrigatória no replay de DLQ** (decisão da reunião, [09:35]-[09:36]): registrar quem executou (admin), o evento reprocessado e o timestamp.
+- **Auditoria obrigatória no replay de DLQ** ([09:35]-[09:36]): registrar quem executou (admin), o evento reprocessado e o timestamp.
 
 ### Tracing
 

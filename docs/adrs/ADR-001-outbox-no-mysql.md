@@ -54,4 +54,4 @@ Usar trigger do banco para avisar o worker. Descartada porque MySQL não tem mec
 
 ### Trade-off explícito
 
-Ganhamos consistência forte (nada se perde) e simplicidade operacional (sem infra nova) ao custo de uma latência mínima de ~2s e da ausência de ordering global — perdas aceitas explicitamente pela equipe na reunião ([09:10], [09:13]).
+Ganhamos consistência forte (nada se perde) e simplicidade operacional (sem infra nova) ao custo de uma latência mínima de ~2s e da ausência de ordering global — perdas aceitas explicitamente pela equipe ([09:10], [09:13]).

@@ -6,7 +6,7 @@ Aceito
 
 ## Contexto
 
-O padrão outbox (ADR-001) define que eventos de mudança de status são registrados em uma tabela `webhook_outbox`, mas quem lê e dispara as chamadas HTTP para os clientes precisa ser definido. A reunião discutiu duas questões principais: o mecanismo de leitura da outbox (event-driven vs. polling) e o ciclo de vida do processo que executa essa leitura ([09:08]-[09:11]).
+O padrão outbox (ADR-001) define que eventos de mudança de status são registrados em uma tabela `webhook_outbox`, mas quem lê e dispara as chamadas HTTP para os clientes precisa ser definido. Foram discutidas duas questões principais: o mecanismo de leitura da outbox (event-driven vs. polling) e o ciclo de vida do processo que executa essa leitura ([09:08]-[09:11]).
 
 O requisito de negócio é que a notificação chegue ao cliente em **até 10 segundos** após a mudança de status ([09:02] Marcos). Qualquer solução precisa atender a esse limite com folga.
 
