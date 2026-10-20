@@ -79,4 +79,32 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | FDD-DELIVERY-01 | docs/FDD.md | Requisito Funcional | Histórico de entregas: últimas 100, com payload, response e tempo | TRANSCRICAO | [09:34] |
 | FDD-CUSTOMER-01 | docs/FDD.md | Restrição | customerId vai no body ou no path, não do JWT | TRANSCRICAO | [09:32] |
 
-**Cobertura:** linhas cobrem os 6 ADRs, o RFC e o FDD. O tracker será atualizado quando PRD e README forem produzidos.
+| PRD-RF-01 | docs/PRD.md | Requisito Funcional | Notificação automática ao cliente quando status muda | TRANSCRICAO | [09:00]-[09:02] |
+| PRD-RF-02 | docs/PRD.md | Requisito Funcional | CRUD webhook: cadastro com URL + eventos; sistema gera secret | TRANSCRICAO | [09:31] |
+| PRD-RF-03 | docs/PRD.md | Requisito Funcional | Editar webhook (URL, eventos, ativo) | TRANSCRICAO | [09:33] |
+| PRD-RF-04 | docs/PRD.md | Requisito Funcional | Remover webhook | TRANSCRICAO | [09:33] |
+| PRD-RF-05 | docs/PRD.md | Requisito Funcional | Listar webhooks de um customer | TRANSCRICAO | [09:33] |
+| PRD-RF-06 | docs/PRD.md | Requisito Funcional | Filtro de eventos na inserção da outbox | TRANSCRICAO | [09:33]-[09:34] |
+| PRD-RF-07 | docs/PRD.md | Requisito Funcional | Histórico de entregas (100, payload, response, tempo) | TRANSCRICAO | [09:34] |
+| PRD-RF-08 | docs/PRD.md | Requisito Funcional | Admin reprocessa DLQ com auditoria | TRANSCRICAO | [09:18], [09:35]-[09:36] |
+| PRD-RF-09 | docs/PRD.md | Requisito Funcional | Rotação de secret com grace period 24h | TRANSCRICAO | [09:21] |
+| PRD-RF-10 | docs/PRD.md | Requisito Funcional | X-Event-Id para dedup do cliente | TRANSCRICAO | [09:24]-[09:25] |
+| PRD-RNF-01 | docs/PRD.md | Requisito Não Funcional | Notificação em até 10 segundos | TRANSCRICAO | [09:02] |
+| PRD-RNF-02 | docs/PRD.md | Requisito Não Funcional | Polling de 2s; latência mínima ~2s | TRANSCRICAO | [09:09]-[09:10] |
+| PRD-RNF-03 | docs/PRD.md | Requisito Não Funcional | URL obrigatoriamente https | TRANSCRICAO | [09:23] |
+| PRD-RNF-04 | docs/PRD.md | Requisito Não Funcional | Payload limitado a 64KB; erro se exceder | TRANSCRICAO | [09:23]-[09:24] |
+| PRD-RNF-05 | docs/PRD.md | Requisito Não Funcional | Timeout de 10s por tentativa | TRANSCRICAO | [09:42] |
+| PRD-RNF-06 | docs/PRD.md | Requisito Não Funcional | Retry 5 tentativas (1m/5m/30m/2h/12h) + DLQ | TRANSCRICAO | [09:15]-[09:18] |
+| PRD-RNF-07 | docs/PRD.md | Requisito Não Funcional | At-least-once (cliente deduplica) | TRANSCRICAO | [09:24]-[09:26] |
+| PRD-RNF-08 | docs/PRD.md | Requisito Não Funcional | Secret única por endpoint | TRANSCRICAO | [09:21] |
+| PRD-RNF-09 | docs/PRD.md | Requisito Não Funcional | Erros padrão WEBHOOK_* | TRANSCRICAO | [09:28]-[09:29] |
+| PRD-OBJ-01 | docs/PRD.md | Objetivo | Meta: tempo real < 10s | TRANSCRICAO | [09:02] |
+| PRD-OBJ-02 | docs/PRD.md | Objetivo | Meta: latência mínima ~2s | TRANSCRICAO | [09:09]-[09:10] |
+| PRD-OBJ-03 | docs/PRD.md | Objetivo | Meta: prazo fim do trimestre (novembro) | TRANSCRICAO | [09:00], [09:45] |
+| PRD-OE-01 | docs/PRD.md | Restrição | Fora de escopo: email de falha | TRANSCRICAO | [09:37] |
+| PRD-OE-02 | docs/PRD.md | Restrição | Fora de escopo: dashboard visual | TRANSCRICAO | [09:39]-[09:40] |
+| PRD-OE-03 | docs/PRD.md | Restrição | Fora de escopo: rate limiting | TRANSCRICAO | [09:38]-[09:39] |
+| PRD-OE-04 | docs/PRD.md | Restrição | Fora de escopo: inbound webhooks | TRANSCRICAO | [09:02] |
+| PRD-RISCO | docs/PRD.md | Riscos | Retenção de cliente estratégico (Atlas) com prazo | TRANSCRICAO | [09:00], [09:45]-[09:47] |
+
+**Cobertura:** linhas cobrem os 6 ADRs, o RFC, o FDD e o PRD. O tracker será atualizado quando o README for produzido.
