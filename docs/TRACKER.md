@@ -51,4 +51,15 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | ADR-006 | docs/adrs/ADR-006-reuso-padroes-existentes.md | Decisão | Logger Pino do módulo (sem instância própria) | CODIGO | src/shared/logger/index.ts:32 |
 | ADR-006 | docs/adrs/ADR-006-reuso-padroes-existentes.md | Restrição | requireRole('ADMIN') existente para endpoint admin | CODIGO | src/middlewares/auth.middleware.ts:49 |
 
-**Cobertura:** linhas até o momento cobrem os 6 ADRs produzidos. O tracker será atualizado conforme PRD, RFC, FDD e README forem produzidos (varredura no fim de cada documento).
+| RFC-TLDR | docs/RFC.md | Resumo | TL;DR: 3 clientes B2B demandam notificação, solução com outbox + worker + HMAC | TRANSCRICAO | [09:00]-[09:02] |
+| RFC-ID-02 | docs/RFC.md | Requisito Funcional | Notificação deve chegar em até 10s | TRANSCRICAO | [09:02] |
+| RFC-ALT-01 | docs/RFC.md | Trade-off | Alternativa descartada: webhook síncrono (travaria outros pedidos) | TRANSCRICAO | [09:03]-[09:06] |
+| RFC-ALT-02 | docs/RFC.md | Trade-off | Alternativa descartada: Redis Streams (overengineering p/ time pequeno) | TRANSCRICAO | [09:07] |
+| RFC-ALT-03 | docs/RFC.md | Trade-off | Alternativa descartada: trigger MySQL (sem NOTIFY/LISTEN nativo) | TRANSCRICAO | [09:09] |
+| RFC-QA-01 | docs/RFC.md | Questão Aberta | Rate limiting de envio por cliente — observar e decidir depois | TRANSCRICAO | [09:38]-[09:39] |
+| RFC-QA-02 | docs/RFC.md | Questão Aberta | Escalabilidade para múltiplos workers — adiado | TRANSCRICAO | [09:12]-[09:13] |
+| RFC-RISCO-01 | docs/RFC.md | Riscos | Cliente não implementa dedup pode gerar suporte | TRANSCRICAO | [09:25]-[09:26] |
+| RFC-RISCO-02 | docs/RFC.md | Riscos | Vazamento de secret por cliente (já ocorreu) | TRANSCRICAO | [09:22] |
+| RFC-OE-01 | docs/RFC.md | Restrição | Email fallback e dashboard visual estão fora de escopo | TRANSCRICAO | [09:37], [09:39]-[09:40] |
+
+**Cobertura:** linhas cobrem os 6 ADRs e o RFC. O tracker será atualizado conforme PRD, FDD e README forem produzidos (varredura no fim de cada documento).
