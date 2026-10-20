@@ -68,7 +68,7 @@ Baseado na tabela de tentativas:
 
 ## 5. Contratos Públicos
 
-Endpoint para cada operação, com exemplos de request/response e status codes.
+Endpoint para cada operação, com exemplos de request/response e status codes. Os nomes de rotas seguem o padrão `/api/v1` existente (`src/routes/index.ts`); paths não especificados na reunião são detalhe de implementação deste FDD.
 
 ### 5.1 `POST /api/v1/webhooks` — criar webhook
 
@@ -125,11 +125,13 @@ Authorization: Bearer <jwt>
 ```
 Response `204 No Content`. Status: `204`, `404`.
 
-### 5.4 `GET /api/v1/webhooks?customerId=...` — listar webhooks de um cliente
+### 5.4 `GET /api/v1/customers/:customerId/webhooks` — listar webhooks de um cliente
+
+O `customerId` vai no path: a regra definida na reunião é que o identificador do cliente é passado no **body ou no path**, nunca derivado do JWT ([09:32]).
 
 Request:
 ```http
-GET /api/v1/webhooks?customerId=uuid
+GET /api/v1/customers/:customerId/webhooks
 Authorization: Bearer <jwt>
 ```
 Response `200 OK`:
@@ -151,6 +153,7 @@ Status: `200`, `400` (sem customerId), `401`.
 
 ### 5.5 `GET /api/v1/webhooks/:id/deliveries` — histórico de entregas
 
+Retorna as **últimas 100 entregas** do webhook, com sucesso/falha, payload, response e tempo de resposta ([09:34]).
 Request:
 ```http
 GET /api/v1/webhooks/:id/deliveries
@@ -162,20 +165,54 @@ Response `200 OK`:
   "data": [
     {
       "id": "delivery-uuid",
-      "eventId": "event-uuid",
       "webhookId": "webhook-uuid",
-      "status": "DELIVERED",
-      "attempts": 1,
-      "lastResponseStatus": 200,
-      "lastAttemptAt": "2026-10-20T10:00:00.000Z"
+      "eventId": "event-uuid",
+      "deliveryStatus": "SUCCESS",
+      "payload": {
+        "event_id": "event-uuid",
+        "event_type": "order.status_changed",
+        "order_id": "order-uuid"
+      },
+      "responseStatus": 200,
+      "durationMs": 340
     }
   ],
-  "pagination": { "page": 1, "pageSize": 20, "total": 1 }
+  "limit": 100
 }
 ```
 Status: `200`, `404`, `401`.
 
-### 5.6 `POST /api/v1/admin/webhooks/dead-letter/:id/replay` — reprocessar DLQ (admin)
+### 5.7 Contrato de entrega do webhook (payload e headers de saída)
+
+É o contrato real consumido pelos clientes — como a feature **chama** o endpoint do cliente. Payload enviado no corpo da requisição `POST` do worker para `webhook.url`.
+
+**Payload** (definido na reunião, [09:43]):
+```json
+{
+  "event_id": "uuid-do-evento",
+  "event_type": "order.status_changed",
+  "timestamp": "2026-10-20T10:00:00.000Z",
+  "order_id": "uuid-do-pedido",
+  "order_number": "ORD-000123",
+  "from_status": "PAID",
+  "to_status": "SHIPPED",
+  "customer_id": "uuid-do-cliente",
+  "total_cents": 12345
+}
+```
+Sem `items`, para manter payload enxuto ([09:43]).
+
+**Headers da requisição de saída** ([09:44]-[09:45]):
+
+| Header | Valor | Finalidade |
+|---|---|---|
+| `Content-Type` | `application/json` | Tipo do corpo |
+| `X-Event-Id` | UUID do evento | Deduplicação pelo cliente (ADR-004) |
+| `X-Signature` | HMAC-SHA256 hex do corpo | Autenticação (ADR-003) |
+| `X-Timestamp` | ISO 8601 do envio | Detecção de replay attack |
+| `X-Webhook-Id` | ID do endpoint webhook | Client com vários webhooks distingue origem |
+
+**Semântica de sucesso:** considera-se entregue quando o cliente responde `2xx`. Timeout de **10 segundos** por tentativa; não responder em 10s é falha e aciona retry (ADR-002) ([09:42]).
 
 Request:
 ```http
@@ -190,18 +227,20 @@ Status: `200` recolocado na outbox, `403` role diferente de ADMIN, `404` DLQ ite
 
 ## 6. Matriz de Erros Previstos (padrão `WEBHOOK_*`)
 
+A reunião definiu o *padrão* `WEBHOOK_*` e deu exemplos ([09:28]-[09:29]): `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`. Os demais códigos abaixo seguem o mesmo padrão e as subclasses de `AppError` existentes, mas **não foram citados literalmente na reunião** — são derivação deste FDD a partir da lógica dos endpoints.
+
 | Código | HTTP | Quando | Origem |
 |---|---|---|---|
 | `WEBHOOK_NOT_FOUND` | 404 | Webhook inexistente em GET/PATCH/DELETE | Transcrição [09:28] |
 | `WEBHOOK_INVALID_URL` | 400 | URL sem `https` | Transcrição [09:23] |
 | `WEBHOOK_SECRET_REQUIRED` | 400 | Secret ausente em cadastro | Transcrição [09:28] |
-| `WEBHOOK_INVALID_EVENT` | 400 | Evento de status inválido (não enum) | Padrão Zod [09:28] |
-| `WEBHOOK_ALREADY_EXISTS` | 409 | Duplicidade de URL p/ mesmo customer | Padrão de conflitos do projeto |
-| `WEBHOOK_NOT_ACTIVE` | 422 | Envio p/ webhook inativo | Padrão de negócio |
-| `WEBHOOK_DLQ_NOT_FOUND` | 404 | Item DLQ inexistente no replay | Transcrição [09:18] |
-| `WEBHOOK_DELIVERY_FAILED` | 502 | Falha na entrega (registrada p/ retry) | Padrão de erro de integração |
+| `WEBHOOK_INVALID_EVENT` | 400 | Evento de status inválido (não enum) | Derivação FDD (padrão Zod existente) |
+| `WEBHOOK_ALREADY_EXISTS` | 409 | Duplicidade de URL para o mesmo customer | Derivação FDD (padrão ConflictError) |
+| `WEBHOOK_NOT_ACTIVE` | 422 | Envio para webhook inativo | Derivação FDD (padrão UnprocessableEntityError) |
+| `WEBHOOK_DLQ_NOT_FOUND` | 404 | Item DLQ inexistente no replay | Derivação FDD ([09:18] define o endpoint) |
+| `WEBHOOK_DELIVERY_FAILED` | 502 | Falha na entrega (registrada para retry) | Derivação FDD (lógica do worker) |
 
-Todos seguem o formato do `AppError` (`message`, `statusCode`, `errorCode`, `details`) já existente.
+Todos seguem o formato do `AppError` (`message`, `statusCode`, `errorCode`, `details`) já existente em `src/shared/errors/app-error.ts`.
 
 ## 7. Estratégias de Resiliência
 
@@ -214,23 +253,25 @@ Todos seguem o formato do `AppError` (`message`, `statusCode`, `errorCode`, `det
 
 ## 8. Observabilidade
 
+A reunião definiu o **reuso do logger Pino existente** ([09:29]) e o padrão de logs com request id já presente na aplicação (via `src/middlewares/request-logger.middleware.ts`). O detalhamento abaixo (métricas e logs estruturados) é derivação deste FDD a partir desses padrões; nomes/campos exatos são sugestão de implementação, não decisão da reunião.
+
 ### Métricas
 
+Sugeridas para monitoramento das entregas (a aplicar conforme infraestrutura de observabilidade do time, ainda não existente na aplicação):
 - Contadores por status de entrega: `webhook_delivered_total`, `webhook_failed_total`.
 - Contador de eventos em DLQ: `webhook_dead_letter_total`.
 - Latência por envio: histograma `webhook_delivery_duration_seconds`.
 
-> Nota: o projeto não possui infraestrutura de métricas atualmente; a recomendação é expor essas métricas via o logger/endpoint existentes ou em formato a ser definido pelo time de plataforma.
-
 ### Logs
 
-- Usar o logger Pino existente (`src/shared/logger/index.ts`), com campos estruturados: `eventId`, `webhookId`, `customerId`, `status`, `attempt` (número da tentativa), `durationMs`, `responseStatus`.
-- Log de auditoria no replay de DLQ: registrar `userId` (admin), `webhookId`, timestamp.
+- Continuar usando o logger Pino existente (`src/shared/logger/index.ts`) — decisão da reunião ([09:29]).
+- Campos estruturados sugeridos nos eventos de entrega: `eventId`, `webhookId`, `customerId`, `status`, `attempt`, `durationMs`, `responseStatus`.
+- **Auditoria obrigatória no replay de DLQ** (decisão da reunião, [09:35]-[09:36]): registrar quem executou (admin), o evento reprocessado e o timestamp.
 
 ### Tracing
 
-- Em cada envio HTTP, incluir `X-Request-Id` no payload de log (o sistema já gera request ids no middleware `request-logger.middleware.ts`).
-- Reusar o `requestLogger` da API para o worker, registrando `worker_cycle` com duração e quantidade de eventos processados.
+- Cada requisição já recebe `X-Request-Id` via `request-logger.middleware.ts`; reutilizar o id nos logs do worker para correlação.
+- `requestLogger` registra `method`, `path`, `statusCode`, `durationMs`, `userId` — padrão a ser seguido pelo worker nos logs de ciclo.
 
 ## 9. Dependências e Compatibilidade
 

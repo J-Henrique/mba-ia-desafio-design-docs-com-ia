@@ -74,5 +74,9 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | FDD-ERRO-02 | docs/FDD.md | Restrição | URL http rejeitada (https obrigatório) | TRANSCRICAO | [09:23] |
 | FDD-RESIL-01 | docs/FDD.md | Requisito Não Funcional | Timeout 10s por tentativa | TRANSCRICAO | [09:42] |
 | FDD-OBS-01 | docs/FDD.md | Requisito Não Funcional | Observabilidade: logs Pino, métricas de entrega, tracing | TRANSCRICAO | [09:29] (padrão existente) |
+| FDD-PAYLOAD-01 | docs/FDD.md | Restrição | Payload de saída: event_id, event_type order.status_changed, timestamp, order_id, order_number, from/to_status, customer_id, total_cents (sem items) | TRANSCRICAO | [09:43] |
+| FDD-HEADER-01 | docs/FDD.md | Restrição | Headers de saída: X-Event-Id, X-Signature, X-Timestamp, Content-Type, X-Webhook-Id | TRANSCRICAO | [09:44]-[09:45] |
+| FDD-DELIVERY-01 | docs/FDD.md | Requisito Funcional | Histórico de entregas: últimas 100, com payload, response e tempo | TRANSCRICAO | [09:34] |
+| FDD-CUSTOMER-01 | docs/FDD.md | Restrição | customerId vai no body ou no path, não do JWT | TRANSCRICAO | [09:32] |
 
 **Cobertura:** linhas cobrem os 6 ADRs, o RFC e o FDD. O tracker será atualizado quando PRD e README forem produzidos.
