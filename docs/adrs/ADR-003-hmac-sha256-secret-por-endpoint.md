@@ -8,7 +8,7 @@ Aceito
 
 Os eventos de webhook são enviados para endpoints HTTP fora da infraestrutura da empresa (servidores dos clientes B2B). O cliente precisa conseguir validar que a requisição veio realmente do sistema OMS e que o payload não foi adulterado durante o trânsito ([09:19] Sofia).
 
-Foi discutido também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks ([09:21] Sofia). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas ([09:21] Diego, Sofia).
+Foi discutido também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks ([09:21] Sofia). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas ([09:21] Sofia).
 
 ## Decisão
 
@@ -29,7 +29,7 @@ O cliente pode solicitar uma nova secret via API. Quando a rotação ocorre:
 
 1. A nova secret é ativada imediatamente para assinar novos envios.
 2. A **secret anterior permanece válida por 24 horas** (grace period), permitindo que o cliente migre os sistemas dele sem perder a capacidade de validar eventos recebidos nesse intervalo.
-3. Após as 24 horas, a secret antiga é descartada ([09:21]-[09:22] Sofia, Diego).
+3. Após as 24 horas, a secret antiga é descartada ([09:21] Sofia).
 
 ### TLS obrigatório
 

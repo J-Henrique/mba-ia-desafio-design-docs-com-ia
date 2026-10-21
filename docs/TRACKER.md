@@ -9,7 +9,8 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Restrição | ID do evento é UUID, padrão das demais tabelas | TRANSCRICAO | [09:51] Larissa |
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Restrição | Tabela outbox com índice em status e created_at; leitura em lotes pequenos | TRANSCRICAO | [09:08] Diego |
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Trade-off | Ordenação implícita por order_id, sem garantir ordering global (single-worker) | TRANSCRICAO | [09:12]-[09:13] Diego, Larissa |
-| ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Decisão | Integração no changeStatus (src/modules/orders/order.service.ts) — mesma transação | CODIGO | src/modules/orders/order.service.ts:126 |
+| ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Decisão | Mudança de status e evento na outbox na mesma transação (integração no changeStatus) | TRANSCRICAO | [09:40]-[09:41] |
+| ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Decisão | changeStatus executa a transação de mudança de status (ponto de integração da outbox) | CODIGO | src/modules/orders/order.service.ts:126 |
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Trade-off | Alternativa descartada: webhook síncrono dentro do service (travaria outros pedidos) | TRANSCRICAO | [09:03]-[09:04] Bruno, Larissa |
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Trade-off | Alternativa descartada: Redis Streams (infra nova, overengineering) | TRANSCRICAO | [09:07] Larissa, Diego |
 | ADR-001 | docs/adrs/ADR-001-outbox-no-mysql.md | Trade-off | Alternativa descartada: trigger MySQL (sem NOTIFY/LISTEN nativo) | TRANSCRICAO | [09:09] Diego |
@@ -23,7 +24,7 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | ADR-002 | docs/adrs/ADR-002-retry-backoff-dlq.md | Requisito Não Funcional | Timeout HTTP de 10s por tentativa | TRANSCRICAO | [09:42] Diego, Sofia |
 | ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Decisão | Autenticação HMAC-SHA256 sobre o payload | TRANSCRICAO | [09:20] Sofia |
 | ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Decisão | Secret única por endpoint (não global) | TRANSCRICAO | [09:21] Sofia |
-| ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Decisão | Rotação de secret com grace period de 24h | TRANSCRICAO | [09:21]-[09:22] Sofia, Diego |
+| ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Decisão | Rotação de secret com grace period de 24h | TRANSCRICAO | [09:21] Sofia |
 | ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Trade-off | Alternativa descartada: secret global (vazamento comprometeria tudo) | TRANSCRICAO | [09:21] Sofia |
 | ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Restrição | TLS obrigatório; URL com http recusada na validação Zod | TRANSCRICAO | [09:23] Sofia |
 | ADR-003 | docs/adrs/ADR-003-hmac-sha256-secret-por-endpoint.md | Requisito Funcional | Tabela de configuração armazena url, secret, customer_id, estado ativo | TRANSCRICAO | [09:21] Bruno |
@@ -50,7 +51,6 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | ADR-006 | docs/adrs/ADR-006-reuso-padroes-existentes.md | Restrição | Error middleware trata AppError, ZodError e Prisma sem alteração | CODIGO | src/middlewares/error.middleware.ts:14 |
 | ADR-006 | docs/adrs/ADR-006-reuso-padroes-existentes.md | Decisão | Logger Pino do módulo (sem instância própria) | CODIGO | src/shared/logger/index.ts:32 |
 | ADR-006 | docs/adrs/ADR-006-reuso-padroes-existentes.md | Restrição | requireRole('ADMIN') existente para endpoint admin | CODIGO | src/middlewares/auth.middleware.ts:49 |
-
 | RFC-TLDR | docs/RFC.md | Resumo | TL;DR: 3 clientes B2B demandam notificação, solução com outbox + worker + HMAC | TRANSCRICAO | [09:00]-[09:02] |
 | RFC-ID-02 | docs/RFC.md | Requisito Funcional | Notificação deve chegar em até 10s | TRANSCRICAO | [09:02] |
 | RFC-ALT-01 | docs/RFC.md | Trade-off | Alternativa descartada: webhook síncrono (travaria outros pedidos) | TRANSCRICAO | [09:03]-[09:06] |
@@ -61,7 +61,6 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | RFC-RISCO-01 | docs/RFC.md | Riscos | Cliente não implementa dedup pode gerar suporte | TRANSCRICAO | [09:25]-[09:26] |
 | RFC-RISCO-02 | docs/RFC.md | Riscos | Vazamento de secret por cliente (já ocorreu) | TRANSCRICAO | [09:22] |
 | RFC-OE-01 | docs/RFC.md | Restrição | Email fallback e dashboard visual estão fora de escopo | TRANSCRICAO | [09:37], [09:39]-[09:40] |
-
 | FDD-FLUXO-01 | docs/FDD.md | Requisito Funcional | Evento criado na outbox na mesma transação do changeStatus | TRANSCRICAO | [09:40]-[09:41] |
 | FDD-FLUXO-02 | docs/FDD.md | Requisito Funcional | Worker processa eventos em polling de 2s | TRANSCRICAO | [09:09]-[09:11] |
 | FDD-FLUXO-03 | docs/FDD.md | Requisito Funcional | Retry 5 tentativas 1m/5m/30m/2h/12h, depois DLQ | TRANSCRICAO | [09:15]-[09:17] |
@@ -78,7 +77,6 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | FDD-HEADER-01 | docs/FDD.md | Restrição | Headers de saída: X-Event-Id, X-Signature, X-Timestamp, Content-Type, X-Webhook-Id | TRANSCRICAO | [09:44]-[09:45] |
 | FDD-DELIVERY-01 | docs/FDD.md | Requisito Funcional | Histórico de entregas: últimas 100, com payload, response e tempo | TRANSCRICAO | [09:34] |
 | FDD-CUSTOMER-01 | docs/FDD.md | Restrição | customerId vai no body ou no path, não do JWT | TRANSCRICAO | [09:32] |
-
 | PRD-RF-01 | docs/PRD.md | Requisito Funcional | Notificação automática ao cliente quando status muda | TRANSCRICAO | [09:00]-[09:02] |
 | PRD-RF-02 | docs/PRD.md | Requisito Funcional | CRUD webhook: cadastro com URL + eventos; sistema gera secret | TRANSCRICAO | [09:31] |
 | PRD-RF-03 | docs/PRD.md | Requisito Funcional | Editar webhook (URL, eventos, ativo) | TRANSCRICAO | [09:33] |
