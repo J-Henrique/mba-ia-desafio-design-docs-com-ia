@@ -29,38 +29,26 @@ O trabalho seguiu a ordem sugerida pelo enunciado, mas com uma camada extra de g
 
 ## Prompts customizados
 
-Os prompts abaixo são exemplos reais, adaptados das instruções do desafio, que dirigiram a geração de cada artefato:
+Os prompts abaixo são cópias fiéis das mensagens que eu escrevi durante a interação com a IA e que geraram os documentos e correções mais relevantes:
 
-**Prompt para produção dos ADRs (extração de decisões da transcrição):**
-
-```
-Produza 5-8 ADRs em docs/adrs/ADR-NNN-titulo-em-kebab-case.md.
-Cada um com Status, Contexto, Decisão, Alternativas Consideradas e
-Consequências. Regra: use SOMENTE o que foi discutido na transcrição.
-Cada afirmação deve citar o timestamp exato ([hh:mm] Nome). Se uma
-alternativa não tiver origem na call, não inclua — ou sinalize como
-"derivação" quando seguir a lógica dos endpoints. Nada inventado.
-```
-
-**Prompt para o FDD (integração com o código real):**
+**Prompt para entendimento do contexto (após a leitura transversal da transcrição):**
 
 ```
-Detalhe o FDD em nível acionável para um dev. Use caminhos de arquivo
-REAIS do repositório (ex: src/modules/orders/order.service.ts). A seção
-"Integração com o sistema existente" deve nomear pelo menos 4 arquivos
-reais e explicar como o módulo de webhooks se conecta a cada um
-(changeStatus, máquina de estados, classes de erro, error middleware,
-requireRole, logger Pino). Tudo rastreável ao código ou à transcrição.
+primeiro me explique de forma resumida do que se trata a transcrição
+lembre-se de que eu não li ela e não tenho contexto do assunto tratado na reunião. Explique de uma forma concisa e considere que não tenho conhecimentos sobre projeto backend, então preciso de uma apoio para entender cada passo que definirmos daqui pra frente
 ```
 
-**Prompt para revisão crítica (o que NÃO deve entrar):**
+**Prompt para validação de rastreabilidade e correção do tracker:**
 
 ```
-Leia minhas ADRs e RFC. Para cada "alternativa considerada", verifique
-se ela foi realmente discutida na transcrição. Remova qualquer
-framework, biblioteca, número ou prática que não tenha origem na call.
-Requisitos, decisões e restrições sem origem identificável são
-proibidos — remova ou sinalize explicitamente como derivação.
+fiz uma correção no tracker pois estava quebrando a formatação da tabela
+sobre os timestamps:
+- faça uma varredura em todos timestamps identificados e garanta que todos os items anotados estão contidos no tracker e vice-versa. 
+- garanta que as referências estão corretas
+- garanta que não existem informações inventadas
+- é importante essa validação dos dois documentos para podermos garantir o rastreio de onde cada fato veio e é um requisito do desafio
+- ainda não remova o timestamps. Somente faça essas correções por enquanto
+```
 ```
 
 ## Iterações e ajustes
