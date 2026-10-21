@@ -6,9 +6,9 @@ Aceito
 
 ## Contexto
 
-Os eventos de webhook são enviados para endpoints HTTP fora da infraestrutura da empresa (servidores dos clientes B2B). O cliente precisa conseguir validar que a requisição veio realmente do sistema OMS e que o payload não foi adulterado durante o trânsito ([09:19] Sofia).
+Os eventos de webhook são enviados para endpoints HTTP fora da infraestrutura da empresa (servidores dos clientes B2B). O cliente precisa conseguir validar que a requisição veio realmente do sistema OMS e que o payload não foi adulterado durante o trânsito (ver TRACKER: ADR-003).
 
-Foi discutido também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks ([09:21] Sofia). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas ([09:21] Sofia).
+Foi discutido também o risco de vazamento de secrets: se uma única secret é usada para todos os endpoints de todos os clientes, o vazamento de uma comprometeria todos os webhooks (ver TRACKER: ADR-003). E, quando uma secret é trocada, o cliente precisa de tempo para migrar os sistemas dele sem perder entregas (ver TRACKER: ADR-003).
 
 ## Decisão
 
@@ -16,8 +16,8 @@ Adotar **HMAC-SHA256** sobre o corpo do request, com **secret única por endpoin
 
 ### Geração e armazenamento
 
-- A secret é gerada pelo sistema e devolvida ao cliente no momento da criação do webhook ([09:31] Marcos).
-- A secret é armazenada no banco associada ao registro do webhook — a tabela de configuração armazena `url`, `secret`, `customer_id` e estado ativo ([09:21] Bruno).
+- A secret é gerada pelo sistema e devolvida ao cliente no momento da criação do webhook (ver TRACKER: ADR-003).
+- A secret é armazenada no banco associada ao registro do webhook — a tabela de configuração armazena `url`, `secret`, `customer_id` e estado ativo (ver TRACKER: ADR-003).
 
 ### Header de assinatura
 
@@ -29,17 +29,17 @@ O cliente pode solicitar uma nova secret via API. Quando a rotação ocorre:
 
 1. A nova secret é ativada imediatamente para assinar novos envios.
 2. A **secret anterior permanece válida por 24 horas** (grace period), permitindo que o cliente migre os sistemas dele sem perder a capacidade de validar eventos recebidos nesse intervalo.
-3. Após as 24 horas, a secret antiga é descartada ([09:21] Sofia).
+3. Após as 24 horas, a secret antiga é descartada (ver TRACKER: ADR-003).
 
 ### TLS obrigatório
 
-A URL do endpoint deve ser obrigatoriamente `https`. URLs com `http` são recusadas na validação (via schema Zod) no momento do cadastro ([09:23] Sofia). Essa validação acontece no schema do endpoint, não na camada de segurança propriamente dita.
+A URL do endpoint deve ser obrigatoriamente `https`. URLs com `http` são recusadas na validação (via schema Zod) no momento do cadastro (ver TRACKER: ADR-003). Essa validação acontece no schema do endpoint, não na camada de segurança propriamente dita.
 
 ## Alternativas Consideradas
 
 ### 1. Secret global única para todos os webhooks
 
-Usar uma única secret HMAC compartilhada por todos os clientes. Descartada por risco de segurança: se um cliente vazar a secret em logs de aplicação (já ocorreu antes, [09:22] Diego), todos os endpoints ficam comprometidos ([09:21] Sofia).
+Usar uma única secret HMAC compartilhada por todos os clientes. Descartada por risco de segurança: se um cliente vazar a secret em logs de aplicação (já ocorreu antes), todos os endpoints ficam comprometidos (ver TRACKER: ADR-003).
 
 ## Consequências
 
@@ -57,4 +57,4 @@ Usar uma única secret HMAC compartilhada por todos os clientes. Descartada por 
 
 ### Trade-off explícito
 
-Secret por endpoint é mais seguro que secret global, mas exige do cliente gerenciar uma secret para cada cadastro de webhook que ele possui — complexidade aceitável pelo padrão de mercado ([09:21] Sofia).
+Secret por endpoint é mais seguro que secret global, mas exige do cliente gerenciar uma secret para cada cadastro de webhook que ele possui — complexidade aceitável pelo padrão de mercado (ver TRACKER: ADR-003).

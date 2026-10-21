@@ -6,11 +6,11 @@ Aceito
 
 ## Contexto
 
-Quando o worker tenta entregar um webhook e o cliente está fora do ar ou responde com erro, é necessário decidir o que fazer com aquele evento. Tentar uma vez só e desistir não é aceitável porque clientes podem ter indisponibilidades temporárias (manutenção, queda de rede, etc.). Tentar infinitamente também não é desejável porque eventos falhos acumulariam na outbox e não haveria sinalização clara de que o cliente tem um problema permanente ([09:14]-[09:15] Diego).
+Quando o worker tenta entregar um webhook e o cliente está fora do ar ou responde com erro, é necessário decidir o que fazer com aquele evento. Tentar uma vez só e desistir não é aceitável porque clientes podem ter indisponibilidades temporárias (manutenção, queda de rede, etc.). Tentar infinitamente também não é desejável porque eventos falhos acumulariam na outbox e não haveria sinalização clara de que o cliente tem um problema permanente (ver TRACKER: ADR-002).
 
-Além disso, eventos que falham definitivamente precisam ser preservados para auditoria e reprocessamento manual, sem poluir a tabela de eventos pendentes ([09:15] Diego).
+Além disso, eventos que falham definitivamente precisam ser preservados para auditoria e reprocessamento manual, sem poluir a tabela de eventos pendentes (ver TRACKER: ADR-002).
 
-Foram discutidos diferentes números de tentativas (3 vs. 5) e onde armazenar eventos que esgotaram as tentativas ([09:15]-[09:18]).
+Foram discutidos diferentes números de tentativas (3 vs. 5) e onde armazenar eventos que esgotaram as tentativas (ver TRACKER: ADR-002).
 
 ## Decisão
 
@@ -28,7 +28,7 @@ As tentativas seguem os seguintes intervalos a partir da primeira falha:
 | 4ª | 2 horas | ~2h36min |
 | 5ª (última) | 12 horas | ~14h36min |
 
-Entre a primeira falha e a última tentativa decorrem aproximadamente **15 horas** ([09:17] Diego). Esse total foi aceito pelo Product Manager como razoável — se um cliente fica offline por 15 horas, o problema é dele ([09:17] Marcos).
+Entre a primeira falha e a última tentativa decorrem aproximadamente **15 horas** (ver TRACKER: ADR-002). Esse total foi aceito pelo Product Manager como razoável — se um cliente fica offline por 15 horas, o problema é dele (ver TRACKER: ADR-002).
 
 ### DLQ — Dead Letter Queue
 
@@ -38,7 +38,7 @@ Eventos que falham em todas as 5 tentativas são movidos para a tabela `webhook_
 - Motivo da falha
 - Timestamp
 
-A DLQ é separada da tabela `webhook_outbox` para manter a leitura da outbox principal limpa e servir como evidência para debug e reprocessamento ([09:18] Diego).
+A DLQ é separada da tabela `webhook_outbox` para manter a leitura da outbox principal limpa e servir como evidência para debug e reprocessamento (ver TRACKER: ADR-002).
 
 ### Reprocessamento manual
 
@@ -48,25 +48,25 @@ Um endpoint administrativo permite recolocar eventos da DLQ de volta na outbox c
 POST /admin/webhooks/dead-letter/:id/replay
 ```
 
-Acesso restrito a usuários com role `ADMIN`, utilizando o middleware `requireRole('ADMIN')` já existente na aplicação. A operação deve ser logada para auditoria ([09:18] Diego, [09:35]-[09:36] Sofia).
+Acesso restrito a usuários com role `ADMIN`, utilizando o middleware `requireRole('ADMIN')` já existente na aplicação. A operação deve ser logada para auditoria (ver TRACKER: ADR-002).
 
 ### Timeout da chamada HTTP
 
-O timeout para cada tentativa de entrega é de **10 segundos**. Clientes que não responderem em 10s são tratados como falha e acionam o mecanismo de retry ([09:42] Diego, Sofia).
+O timeout para cada tentativa de entrega é de **10 segundos**. Clientes que não responderem em 10s são tratados como falha e acionam o mecanismo de retry (ver TRACKER: ADR-002).
 
 ## Alternativas Consideradas
 
 ### 1. Três tentativas (backoff mais agressivo)
 
-Proposto por Bruno ([09:16]). Descartada porque 3 tentativas cobririam apenas uma janela curta de indisponibilidade (~30 minutos); há registros de clientes com manutenção planejada de 2 horas. As 5 tentativas cobrem aproximadamente 15 horas, o que já inclui janelas longas de manutenção ([09:16] Diego, Larissa).
+Proposto por Bruno (ver TRACKER: ADR-002). Descartada porque 3 tentativas cobririam apenas uma janela curta de indisponibilidade (~30 minutos); há registros de clientes com manutenção planejada de 2 horas. As 5 tentativas cobrem aproximadamente 15 horas, o que já inclui janelas longas de manutenção (ver TRACKER: ADR-002).
 
 ### 2. Retry indefinido com backoff
 
-Descartada porque eventos ficariam "pendurados" para sempre se o cliente desaparecer permanentemente, sem dar visibilidade ao time de operação de que há um problema ativo ([09:15] Diego).
+Descartada porque eventos ficariam "pendurados" para sempre se o cliente desaparecer permanentemente, sem dar visibilidade ao time de operação de que há um problema ativo (ver TRACKER: ADR-002).
 
 ### 3. Marcar como "failed" na própria outbox (sem DLQ separada)
 
-Descartada porque poluiria a tabela da outbox principal — manter a DLQ em tabela separada mantém a leitura da outbox mais rápida e organiza o debug ([09:18] Diego, apoiado por Bruno).
+Descartada porque poluiria a tabela da outbox principal — manter a DLQ em tabela separada mantém a leitura da outbox mais rápida e organiza o debug (ver TRACKER: ADR-002).
 
 ## Consequências
 
@@ -84,4 +84,4 @@ Descartada porque poluiria a tabela da outbox principal — manter a DLQ em tabe
 
 ### Trade-off explícito
 
-Mais tentativas = maior chance de entrega mesmo em janelas longas de indisponibilidade, ao custo de maior latência para declarar falha definitiva (~15h) e maior complexidade de implementação. As 5 tentativas foram o ponto de equilíbrio aceito pelo time ([09:16]-[09:17]).
+Mais tentativas = maior chance de entrega mesmo em janelas longas de indisponibilidade, ao custo de maior latência para declarar falha definitiva (~15h) e maior complexidade de implementação. As 5 tentativas foram o ponto de equilíbrio aceito pelo time (ver TRACKER: ADR-002).

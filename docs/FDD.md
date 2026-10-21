@@ -23,9 +23,9 @@ Três clientes B2B exigem ser notificados em tempo real quando o status dos pedi
 - Worker separado (`src/worker.ts`) com polling periódico.
 
 **Excluso:**
-- Dashboard visual para clientes (fora de escopo, [09:39]-[09:40]).
-- Notificação por email de falha (fora de escopo, [09:37]).
-- Rate limiting de envio sobre o qual a equipe deve observar antes de implementar ([09:38]-[09:39]).
+- Dashboard visual para clientes (fora de escopo, ver TRACKER: `FDD-ESC-01`).
+- Notificação por email de falha (fora de escopo, ver TRACKER: `FDD-ESC-02`).
+- Rate limiting de envio sobre o qual a equipe deve observar antes de implementar (ver TRACKER: `FDD-ESC-03`).
 
 ## 4. Fluxos Detalhados
 
@@ -127,7 +127,7 @@ Response `204 No Content`. Status: `204`, `404`.
 
 ### 5.4 `GET /api/v1/customers/:customerId/webhooks` — listar webhooks de um cliente
 
-O `customerId` vai no path: o identificador do cliente é passado no **body ou no path**, nunca derivado do JWT ([09:32]).
+O `customerId` vai no path: o identificador do cliente é passado no **body ou no path**, nunca derivado do JWT (ver TRACKER: `FDD-CUSTOMER-01`).
 
 Request:
 ```http
@@ -153,7 +153,7 @@ Status: `200`, `400` (sem customerId), `401`.
 
 ### 5.5 `GET /api/v1/webhooks/:id/deliveries` — histórico de entregas
 
-Retorna as **últimas 100 entregas** do webhook, com sucesso/falha, payload, response e tempo de resposta ([09:34]).
+Retorna as **últimas 100 entregas** do webhook, com sucesso/falha, payload, response e tempo de resposta (ver TRACKER: `FDD-DELIVERY-01`).
 Request:
 ```http
 GET /api/v1/webhooks/:id/deliveries
@@ -186,7 +186,7 @@ Status: `200`, `404`, `401`.
 
 É o contrato real consumido pelos clientes — como a feature **chama** o endpoint do cliente. Payload enviado no corpo da requisição `POST` do worker para `webhook.url`.
 
-**Payload** ([09:43]):
+**Payload** (ver TRACKER: `FDD-PAYLOAD-01`):
 ```json
 {
   "event_id": "uuid-do-evento",
@@ -200,9 +200,9 @@ Status: `200`, `404`, `401`.
   "total_cents": 12345
 }
 ```
-Sem `items`, para manter payload enxuto ([09:43]).
+Sem `items`, para manter payload enxuto (ver TRACKER: `FDD-PAYLOAD-02`).
 
-**Headers da requisição de saída** ([09:44]-[09:45]):
+**Headers da requisição de saída** (ver TRACKER: `FDD-HEADER-01`):
 
 | Header | Valor | Finalidade |
 |---|---|---|
@@ -212,7 +212,7 @@ Sem `items`, para manter payload enxuto ([09:43]).
 | `X-Timestamp` | ISO 8601 do envio | Detecção de replay attack |
 | `X-Webhook-Id` | ID do endpoint webhook | Client com vários webhooks distingue origem |
 
-**Semântica de sucesso:** considera-se entregue quando o cliente responde `2xx`. Timeout de **10 segundos** por tentativa; não responder em 10s é falha e aciona retry (ADR-002) ([09:42]).
+**Semântica de sucesso:** considera-se entregue quando o cliente responde `2xx`. Timeout de **10 segundos** por tentativa; não responder em 10s é falha e aciona retry (ADR-002) (ver TRACKER: `FDD-SEMANTICA-01`).
 
 Request:
 ```http
@@ -227,33 +227,33 @@ Status: `200` recolocado na outbox, `403` role diferente de ADMIN, `404` DLQ ite
 
 ## 6. Matriz de Erros Previstos (padrão `WEBHOOK_*`)
 
-O *padrão* `WEBHOOK_*` foi definido com exemplos ([09:28]-[09:29]): `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`. Os demais códigos abaixo seguem o mesmo padrão e as subclasses de `AppError` existentes, mas **não foram citados literalmente** — são derivação deste FDD a partir da lógica dos endpoints.
+O *padrão* `WEBHOOK_*` foi definido com exemplos (ver TRACKER: `FDD-ERRO-01`): `WEBHOOK_NOT_FOUND`, `WEBHOOK_INVALID_URL`, `WEBHOOK_SECRET_REQUIRED`. Os demais códigos abaixo seguem o mesmo padrão e as subclasses de `AppError` existentes, mas **não foram citados literalmente** — são derivação deste FDD a partir da lógica dos endpoints.
 
 | Código | HTTP | Quando | Origem |
 |---|---|---|---|
-| `WEBHOOK_NOT_FOUND` | 404 | Webhook inexistente em GET/PATCH/DELETE | Transcrição [09:28] |
-| `WEBHOOK_INVALID_URL` | 400 | URL sem `https` | Transcrição [09:23] |
-| `WEBHOOK_SECRET_REQUIRED` | 400 | Secret ausente em cadastro | Transcrição [09:28] |
+| `WEBHOOK_NOT_FOUND` | 404 | Webhook inexistente em GET/PATCH/DELETE | Transcrição (ver TRACKER: `FDD-ERRO-01`) |
+| `WEBHOOK_INVALID_URL` | 400 | URL sem `https` | Transcrição (ver TRACKER: `FDD-ERRO-02`) |
+| `WEBHOOK_SECRET_REQUIRED` | 400 | Secret ausente em cadastro | Transcrição (ver TRACKER: `FDD-ERRO-01`) |
 | `WEBHOOK_INVALID_EVENT` | 400 | Evento de status inválido (não enum) | Derivação FDD (padrão Zod existente) |
 | `WEBHOOK_ALREADY_EXISTS` | 409 | Duplicidade de URL para o mesmo customer | Derivação FDD (padrão ConflictError) |
 | `WEBHOOK_NOT_ACTIVE` | 422 | Envio para webhook inativo | Derivação FDD (padrão UnprocessableEntityError) |
-| `WEBHOOK_DLQ_NOT_FOUND` | 404 | Item DLQ inexistente no replay | Derivação FDD ([09:18] define o endpoint) |
+| `WEBHOOK_DLQ_NOT_FOUND` | 404 | Item DLQ inexistente no replay | Derivação FDD (ver TRACKER: `FDD-ERRO-03` — endpoint replay) |
 | `WEBHOOK_DELIVERY_FAILED` | 502 | Falha na entrega (registrada para retry) | Derivação FDD (lógica do worker) |
 
 Todos seguem o formato do `AppError` (`message`, `statusCode`, `errorCode`, `details`) já existente em `src/shared/errors/app-error.ts`.
 
 ## 7. Estratégias de Resiliência
 
-- **Timeout HTTP:** 10 segundos por chamada ([09:42]). Cliente que não responde em 10s → falha → retry.
-- **Retry com backoff exponencial:** 5 tentativas: 1m/5m/30m/2h/12h ([09:15]-[09:17]).
-- **DLQ:** após 5 falhas, evento vai para `webhook_dead_letter` com motivo e timestamp ([09:18]).
-- **At-least-once e dedup:** eventos podem chegar duplicados; `X-Event-Id` único permite dedup no cliente ([09:24]-[09:25]).
-- **Filtro de eventos na inserção:** se nenhum webhook do customer quer o status, nem insere na outbox — evita trabalho desnecessário ([09:34]).
-- **Fallback/out-of-scope:** notificação por email fica para fase futura ([09:37]).
+- **Timeout HTTP:** 10 segundos por chamada (ver TRACKER: `FDD-SEMANTICA-01`). Cliente que não responde em 10s → falha → retry.
+- **Retry com backoff exponencial:** 5 tentativas: 1m/5m/30m/2h/12h (ver TRACKER: `FDD-RESIL-02`).
+- **DLQ:** após 5 falhas, evento vai para `webhook_dead_letter` com motivo e timestamp (ver TRACKER: `FDD-RESIL-03`).
+- **At-least-once e dedup:** eventos podem chegar duplicados; `X-Event-Id` único permite dedup no cliente (ver TRACKER: `FDD-RESIL-04`).
+- **Filtro de eventos na inserção:** se nenhum webhook do customer quer o status, nem insere na outbox — evita trabalho desnecessário (ver TRACKER: `FDD-RESIL-05`).
+- **Fallback/out-of-scope:** notificação por email fica para fase futura (ver TRACKER: `FDD-ESC-02`).
 
 ## 8. Observabilidade
 
-Foi definido o **reuso do logger Pino existente** ([09:29]) e o padrão de logs com request id já presente na aplicação (via `src/middlewares/request-logger.middleware.ts`). O detalhamento abaixo (métricas e logs estruturados) é derivação deste FDD a partir desses padrões; nomes/campos exatos são sugestão de implementação, não decisão fechada.
+Foi definido o **reuso do logger Pino existente** (ver TRACKER: `FDD-OBS-02`) e o padrão de logs com request id já presente na aplicação (via `src/middlewares/request-logger.middleware.ts`). O detalhamento abaixo (métricas e logs estruturados) é derivação deste FDD a partir desses padrões; nomes/campos exatos são sugestão de implementação, não decisão fechada.
 
 ### Métricas
 
@@ -264,9 +264,9 @@ Sugeridas para monitoramento das entregas (a aplicar conforme infraestrutura de 
 
 ### Logs
 
-- Usar o logger Pino existente (`src/shared/logger/index.ts`) — decisão do time ([09:29]).
+- Usar o logger Pino existente (`src/shared/logger/index.ts`) — decisão do time (ver TRACKER: `FDD-OBS-02`).
 - Campos estruturados sugeridos nos eventos de entrega: `eventId`, `webhookId`, `customerId`, `status`, `attempt`, `durationMs`, `responseStatus`.
-- **Auditoria obrigatória no replay de DLQ** ([09:35]-[09:36]): registrar quem executou (admin), o evento reprocessado e o timestamp.
+- **Auditoria obrigatória no replay de DLQ** (ver TRACKER: `FDD-OBS-03`): registrar quem executou (admin), o evento reprocessado e o timestamp.
 
 ### Tracing
 
@@ -296,23 +296,23 @@ Sugeridas para monitoramento das entregas (a aplicar conforme infraestrutura de 
 
 | Risco | Mitigação |
 |---|---|
-| Cliente fora do ar por horas | Retry com backoff de até ~15h + DLQ ([09:15]-[09:17]) |
-| Secret vazada (já ocorreu em outro cliente) | Secret por endpoint + rotação com grace period 24h ([09:21]-[09:22]) |
-| Evento duplicado processado pelo cliente | `X-Event-Id` + documentação no portal ([09:25]-[09:26]) |
-| Worker derrubado junto com a API | Processo separado (`src/worker.ts`) com entry point próprio ([09:11]) |
-| Acúmulo de eventos pendentes | Índice em `status` + `created_at` na outbox; leitura em lotes pequenos ([09:08]) |
+| Cliente fora do ar por horas | Retry com backoff de até ~15h + DLQ (ver TRACKER: `FDD-RISCO-01`) |
+| Secret vazada (já ocorreu em outro cliente) | Secret por endpoint + rotação com grace period 24h (ver TRACKER: `FDD-RISCO-02`) |
+| Evento duplicado processado pelo cliente | `X-Event-Id` + documentação no portal (ver TRACKER: `FDD-RISCO-03`) |
+| Worker derrubado junto com a API | Processo separado (`src/worker.ts`) com entry point próprio (ver TRACKER: `FDD-RISCO-04`) |
+| Acúmulo de eventos pendentes | Índice em `status` + `created_at` na outbox; leitura em lotes pequenos (ver TRACKER: `FDD-RISCO-05`) |
 
 ## 12. Integração com o Sistema Existente
 
 | Arquivo/caminho | Como o módulo de webhooks se integra |
 |---|---|
-| `src/modules/orders/order.service.ts` | Dentro do `$transaction` do método `changeStatus` (linha 126), após o `tx.order.update` e o insert em `order_status_history`, chamar a função de *enqueue* do webhook (ex: `publishWebhookEvent(tx, order, fromStatus, toStatus)`) que insere na `webhook_outbox` com o payload snapshot. Se a inserção falhar, rollback total ([09:40]-[09:41]). |
+| `src/modules/orders/order.service.ts` | Dentro do `$transaction` do método `changeStatus` (linha 126), após o `tx.order.update` e o insert em `order_status_history`, chamar a função de *enqueue* do webhook (ex: `publishWebhookEvent(tx, order, fromStatus, toStatus)`) que insere na `webhook_outbox` com o payload snapshot. Se a inserção falhar, rollback total (ver TRACKER: `FDD-INT-01`). |
 | `src/modules/orders/order.status.ts` | Reusar o enum `OrderStatus` e os helpers (`canTransition`, `allowedTransitions`) para validar os eventos de webhook e filtrar por status desejado pelo cliente. |
 | `src/shared/errors/app-error.ts` + `src/shared/errors/http-errors.ts` | Estender ou reutilizar `AppError` e as subclasses (`ConflictError`, `UnprocessableEntityError`, `NotFoundError`) para lançar erros com código `WEBHOOK_*`. |
 | `src/middlewares/error.middleware.ts` | Sem alteração: o middleware já trata `AppError` (formata `error: { code, message, details }`) e `ZodError` (400) — os erros do módulo webhook caem nele automaticamente. |
 | `src/middlewares/auth.middleware.ts` | Usar `authenticate` para autenticação JWT; `requireRole('ADMIN')` para o endpoint de replay de DLQ. |
 | `src/routes/index.ts` | Registrar `buildWebhookRouter` e o router admin no `buildApiRouter`, montando `/api/v1/webhooks` e `/api/v1/admin/webhooks`. |
-| `src/modules/webhooks/` (novo) | Seguir o padrão `controller → service → repository → routes → schemas` dos demais módulos ([09:27]). |
+| `src/modules/webhooks/` (novo) | Seguir o padrão `controller → service → repository → routes → schemas` dos demais módulos (ver TRACKER: `FDD-INT-02`). |
 | `src/shared/logger/index.ts` | Usar o Pino existente (mesma instância exportada), com `eventId`/`webhookId` nos logs de entrega. |
-| `prisma/schema.prisma` | Adicionar `webhook`, `webhook_outbox`, `webhook_dead_letter` com UUID padrão (`@default(uuid()) @db.Char(36)`), índices em `status`+`created_at` ([09:08], [09:51]). |
-| `package.json` | Adicionar script `"worker": "tsx watch --env-file=.env src/worker.ts"` seguindo o padrão do `dev` (entry separada) ([09:11]). |
+| `prisma/schema.prisma` | Adicionar `webhook`, `webhook_outbox`, `webhook_dead_letter` com UUID padrão (`@default(uuid()) @db.Char(36)`), índices em `status`+`created_at` (ver TRACKER: `FDD-INT-03`). |
+| `package.json` | Adicionar script `"worker": "tsx watch --env-file=.env src/worker.ts"` seguindo o padrão do `dev` (entry separada) (ver TRACKER: `FDD-INT-04`). |

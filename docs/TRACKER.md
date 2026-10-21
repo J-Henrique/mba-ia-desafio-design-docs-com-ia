@@ -61,6 +61,14 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | RFC-RISCO-01 | docs/RFC.md | Riscos | Cliente não implementa dedup pode gerar suporte | TRANSCRICAO | [09:25]-[09:26] |
 | RFC-RISCO-02 | docs/RFC.md | Riscos | Vazamento de secret por cliente (já ocorreu) | TRANSCRICAO | [09:22] |
 | RFC-OE-01 | docs/RFC.md | Restrição | Email fallback e dashboard visual estão fora de escopo | TRANSCRICAO | [09:37], [09:39]-[09:40] |
+| RFC-UNI-01 | docs/RFC.md | Restrição | Entrega unilateral (sistema → cliente); cliente não envia webhooks | TRANSCRICAO | [09:02] |
+| RFC-EVENTS-01 | docs/RFC.md | Requisito Funcional | Cliente pode escolher quais status deseja receber | TRANSCRICAO | [09:33] |
+| RFC-DUP-01 | docs/RFC.md | Restrição | Cliente pode receber o mesmo evento mais de uma vez (dedup pelo cliente) | TRANSCRICAO | [09:24]-[09:26] |
+| RFC-OUTBOX-01 | docs/RFC.md | Decisão | Outbox na mesma transação da mudança de status (snapshot renderizado) | TRANSCRICAO | [09:06]-[09:07] |
+| RFC-WORKER-01 | docs/RFC.md | Decisão | Worker separado em processo próprio, polling 2s | TRANSCRICAO | [09:09]-[09:11] |
+| RFC-RESIL-01 | docs/RFC.md | Decisão | Resiliência: retry backoff 5x, DLQ, HMAC, at-least-once | TRANSCRICAO | [09:15]-[09:25] |
+| RFC-MERCADO-01 | docs/RFC.md | Referência | Padrão de mercado: Stripe e GitHub usam at-least-once + HMAC | TRANSCRICAO | [09:25] |
+| RFC-RISCO-03 | docs/RFC.md | Riscos | Worker fora de ordem se múltiplas instâncias iniciadas | TRANSCRICAO | [09:12]-[09:13] |
 | FDD-FLUXO-01 | docs/FDD.md | Requisito Funcional | Evento criado na outbox na mesma transação do changeStatus | TRANSCRICAO | [09:40]-[09:41] |
 | FDD-FLUXO-02 | docs/FDD.md | Requisito Funcional | Worker processa eventos em polling de 2s | TRANSCRICAO | [09:09]-[09:11] |
 | FDD-FLUXO-03 | docs/FDD.md | Requisito Funcional | Retry 5 tentativas 1m/5m/30m/2h/12h, depois DLQ | TRANSCRICAO | [09:15]-[09:17] |
@@ -77,6 +85,27 @@ Referência cruzada entre os documentos de design, a transcrição da reunião e
 | FDD-HEADER-01 | docs/FDD.md | Restrição | Headers de saída: X-Event-Id, X-Signature, X-Timestamp, Content-Type, X-Webhook-Id | TRANSCRICAO | [09:44]-[09:45] |
 | FDD-DELIVERY-01 | docs/FDD.md | Requisito Funcional | Histórico de entregas: últimas 100, com payload, response e tempo | TRANSCRICAO | [09:34] |
 | FDD-CUSTOMER-01 | docs/FDD.md | Restrição | customerId vai no body ou no path, não do JWT | TRANSCRICAO | [09:32] |
+| FDD-ESC-01 | docs/FDD.md | Restrição | Fora de escopo: dashboard visual | TRANSCRICAO | [09:39]-[09:40] |
+| FDD-ESC-02 | docs/FDD.md | Restrição | Fora de escopo: notificação por email | TRANSCRICAO | [09:37] |
+| FDD-ESC-03 | docs/FDD.md | Restrição | Fora de escopo: rate limiting (obs. antes de implementar) | TRANSCRICAO | [09:38]-[09:39] |
+| FDD-PAYLOAD-02 | docs/FDD.md | Restrição | Payload sem items (enxuto) | TRANSCRICAO | [09:43] |
+| FDD-SEMANTICA-01 | docs/FDD.md | Requisito Funcional | Sucesso = resposta 2xx; timeout 10s = falha | TRANSCRICAO | [09:42] |
+| FDD-ERRO-03 | docs/FDD.md | Restrição | WEBHOOK_DLQ_NOT_FOUND; endpoint replay definido | TRANSCRICAO | [09:18] |
+| FDD-OBS-02 | docs/FDD.md | Requisito Não Funcional | Reuso do logger Pino existente | TRANSCRICAO | [09:29] |
+| FDD-OBS-03 | docs/FDD.md | Requisito Não Funcional | Auditoria no replay de DLQ | TRANSCRICAO | [09:35]-[09:36] |
+| FDD-RESIL-02 | docs/FDD.md | Requisito Não Funcional | Backoff 5x 1m/5m/30m/2h/12h | TRANSCRICAO | [09:15]-[09:17] |
+| FDD-RESIL-03 | docs/FDD.md | Requisito Não Funcional | DLQ após 5 falhas com motivo e timestamp | TRANSCRICAO | [09:18] |
+| FDD-RESIL-04 | docs/FDD.md | Requisito Não Funcional | At-least-once; X-Event-Id para dedup | TRANSCRICAO | [09:24]-[09:25] |
+| FDD-RESIL-05 | docs/FDD.md | Requisito Não Funcional | Filtro de eventos na inserção da outbox | TRANSCRICAO | [09:34] |
+| FDD-RISCO-01 | docs/FDD.md | Riscos | Cliente fora do ar por horas | TRANSCRICAO | [09:15]-[09:17] |
+| FDD-RISCO-02 | docs/FDD.md | Riscos | Secret vazada | TRANSCRICAO | [09:21]-[09:22] |
+| FDD-RISCO-03 | docs/FDD.md | Riscos | Evento duplicado processado | TRANSCRICAO | [09:25]-[09:26] |
+| FDD-RISCO-04 | docs/FDD.md | Riscos | Worker derrubado junto com API | TRANSCRICAO | [09:11] |
+| FDD-RISCO-05 | docs/FDD.md | Riscos | Acúmulo de eventos pendentes | TRANSCRICAO | [09:08] |
+| FDD-INT-01 | docs/FDD.md | Decisão | changeStatus integra outbox na mesma transação | TRANSCRICAO | [09:40]-[09:41] |
+| FDD-INT-02 | docs/FDD.md | Decisão | Módulo webhooks segue padrão controller/service/repository | TRANSCRICAO | [09:27] |
+| FDD-INT-03 | docs/FDD.md | Decisão | Schema Prisma: webhook, outbox, dead_letter com UUID | TRANSCRICAO | [09:08], [09:51] |
+| FDD-INT-04 | docs/FDD.md | Decisão | Script npm run worker como entry separada | TRANSCRICAO | [09:11] |
 | PRD-RF-01 | docs/PRD.md | Requisito Funcional | Notificação automática ao cliente quando status muda | TRANSCRICAO | [09:00]-[09:02] |
 | PRD-RF-02 | docs/PRD.md | Requisito Funcional | CRUD webhook: cadastro com URL + eventos; sistema gera secret | TRANSCRICAO | [09:31] |
 | PRD-RF-03 | docs/PRD.md | Requisito Funcional | Editar webhook (URL, eventos, ativo) | TRANSCRICAO | [09:33] |
