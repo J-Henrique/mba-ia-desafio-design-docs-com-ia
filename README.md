@@ -12,7 +12,7 @@ A entrega é puramente documental: PRD, RFC, FDD, 6 ADRs, um Tracker de rastreab
 |---|---|
 | **Claude Code (CLI)** | Agente principal. Leitura da transcrição e do código, mapa da arquitetura existente, geração dos documentos e revisão iterativa. |
 | **Deepseek V4 Flash (modelo)** | Motor da análise: interpretação da transcrição, extração de decisões/requisitos/alternativas, formulação das seções técnicas. |
-| **Comandos customizados (skills)** | `caveman` para reduzir a quantidade de output e economizar tokens; regras de contexto em `.claude/rules/` e memória em `.claude/memory/` para persistir as convenções do desafio entre sessões. |
+| **Comandos customizados (skills)** | `caveman` para reduzir a quantidade de output e economizar tokens; regras de contexto em `.claude/rules/` e arquivos de memória em `.claude/memory/` (mantidos localmente) para persistir as convenções do desafio entre sessões. |
 
 ## Workflow adotado
 
