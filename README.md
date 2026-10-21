@@ -2,17 +2,17 @@
 
 ## Sobre o desafio
 
-O desafio consistia em transformar a transcrição de uma reunião técnica (55 minutos, 5 participantes) em um pacote completo de documentação de design para uma nova feature: **Sistema de Webhooks de Notificação de Pedidos** em um Order Management System (OMS) existente. A reunião decidiu os rumos técnicos — outbox no MySQL, worker separado, retry com backoff, HMAC, at-least-once — mas nada além da transcrição havia sido registrado.
+O desafio consistia em transformar a transcrição de uma reunião técnica (55 minutos, 5 participantes) em um pacote completo de documentação de design para uma nova feature: **Sistema de Webhooks de Notificação de Pedidos** em um Order Management System (OMS) existente. A transcrição da reunião decidiu os rumos técnicos mas nada além disso havia sido registrado.
 
-A entrega é puramente documental: PRD, RFC, FDD, 6 ADRs, um Tracker de rastreabilidade e este README. O código da aplicação (`src/`, `prisma/`, `tests/`) não foi alterado — serviu apenas como contexto e referência para ancorar os documentos em arquivos e padrões reais.
+A entrega é puramente documental: PRD, RFC, FDD, 6 ADRs, um Tracker de rastreabilidade e este README. A utilização de uma ferramenta de IA para a geração destes documentos possibilitou que o desafio fosse concluído muito mais rápido, com muito mais precisão e reduzindo a carga cognitiva drasticamente, uma vez que seria muito desgastante resumir manualmente todo o conteúdo para só então gerar os documentos.
 
 ## Ferramentas de IA utilizadas
 
 | Ferramenta | Papel |
 |---|---|
-| **Claude Code (CLI)** | Agente principal. Leitura da transcrição e do código, mapa da arquitetura existente (`changeStatus`, máquina de estados, classes de erro, middlewares, logger Pino), geração dos documentos e revisão iterativa. |
-| **Claude (modelo)** | Motor da análise: interpretação da transcrição, extração de decisões/requisitos/alternativas, formulação das seções técnicas. |
-| **Comandos customizados (skills)** | `caveman-commit` para mensagens de commit concisas; regras de contexto em `.claude/rules/` e memória em `.claude/memory/` para persistir as convenções do desafio entre sessões. |
+| **Claude Code (CLI)** | Agente principal. Leitura da transcrição e do código, mapa da arquitetura existente, geração dos documentos e revisão iterativa. |
+| **Deepseek V4 Flash (modelo)** | Motor da análise: interpretação da transcrição, extração de decisões/requisitos/alternativas, formulação das seções técnicas. |
+| **Comandos customizados (skills)** | `caveman` para reduzir a quantidade de output e economizar tokens; regras de contexto em `.claude/rules/` e memória em `.claude/memory/` para persistir as convenções do desafio entre sessões. |
 
 ## Workflow adotado
 
@@ -26,8 +26,6 @@ O trabalho seguiu a ordem sugerida pelo enunciado, mas com uma camada extra de g
 6. **PRD** — consolidação de produto (problema, escopo, requisitos, métricas), produzido por último entre os grandes documentos.
 7. **Tracker** — montado **em paralelo**: cada documento pronto gerava linhas no tracker, mapeando item → origem na transcrição (timestamp) ou no código (caminho de arquivo). O tracker foi a ferramenta de checagem contra alucinação — se um item não tinha origem, era removido ou sinalizado como derivação.
 8. **README** — este documento, por último.
-
-Um detalhe importante do fluxo: os documentos **não citam timestamps inline no corpo**. Em vez disso, cada afirmação referencia um ID do tracker (`(ver TRACKER: PRD-RF-01)`), e o tracker — com todos os timestamps e caminhos de arquivo — é a fonte única de origens. Isso mantém os documentos limpos e legíveis sem perder rastreabilidade.
 
 ## Prompts customizados
 
@@ -71,11 +69,11 @@ A geração não saiu correta de primeira — houveram pelo menos **3 iteraçõe
 
 **Iteração 1 — alternativas inventadas nos ADRs.** A primeira versão dos ADRs incluiu alternativas "plausíveis de mercado" que **não foram discutidas na reunião**: framework de webhook externo (Svix) no ADR-006, "JWT no header" e "Basic Auth" no ADR-003, "RabbitMQ" no ADR-005. A correção exigiu revisar cada alternativa contra a transcrição e remover as que não tinham origem, deixando apenas as realmente discutidas (webhook síncrono, Redis Streams, trigger MySQL, secret global, exactly-once, worker embutido, logger separado).
 
-**Iteração 2 — RFC com recomendações e riscos não rastreáveis.** A primeira versão do RFC incluía "recomendações para revisão" (implementar rate limiting antes do launch, campo `shard_key` na outbox) que eram sugestões do autor, não decisões da reunião — removidas para cumprir a regra de rastreabilidade. Além disso, nomes de participantes foram removidos da narrativa: o documento passou a narrar os fatos de forma impessoal (mantendo os timestamps como referência), para ser legível por quem não participou da call.
+**Iteração 2 — RFC com recomendações e riscos não rastreáveis.** A primeira versão do RFC incluía "recomendações para revisão" (implementar rate limiting antes do launch, campo `shard_key` na outbox) que eram sugestões do autor, não decisões da reunião — removidas para cumprir a regra de rastreabilidade. Além disso, nomes de participantes foram removidos da narrativa: o documento passou a narrar os fatos de forma impessoal (mantendo os items do documento TRACKER como referência), para ser legível por quem não participou da call.
 
 **Iteração 3 — migração de timestamps para o tracker.** Originalmente os documentos citavam `[09:xx] Nome` inline. Após revisão, decidiu-se que os timestamps viveriam **apenas no TRACKER**, e os documentos passaram a referenciar `(ver TRACKER: ID)`. Isso exigiu criar IDs granulares no tracker (PRD-RF-01, FDD-CONTRATO-03, RFC-ALT-02, etc.), substituir todas as citações e validar programaticamente que todos os IDs referenciados tinham linha correspondente.
 
-**Iteração 4 — corrupção no PRD durante automação.** Um script de substituição em massa de timestamps no PRD gerou referências quebradas (`PRD-RF-02-PRD-RF-05`, `[09:44]-PRD-OBJ-03`). O PRD foi reconstruído manualmente, semântica por semântica, com mapeamento correto de cada fato para seu ID.
+**Iteração 4 — corrupção no PRD durante automação.** Um script de substituição em massa de timestamps no PRD gerou referências quebradas (`PRD-RF-02-PRD-RF-05`, `[09:44]-PRD-OBJ-03`). O PRD foi reconstruído, semântica por semântica, com mapeamento correto de cada fato para seu ID.
 
 ## Como navegar a entrega
 
@@ -88,7 +86,7 @@ Caminhos dos arquivos entregues:
 | `docs/FDD.md` | Implementação: fluxos (outbox/worker/retry/DLQ), 6 endpoints, matriz de erros `WEBHOOK_*`, resiliência, observabilidade, integração com 11 arquivos reais |
 | `docs/TRACKER.md` | Rastreabilidade: 88 linhas ligando cada item à transcrição (`[hh:mm] Nome`) ou ao código (caminho de arquivo) |
 | `docs/adrs/ADR-001` a `ADR-006` | Decisões arquiteturais em formato MADR |
-| `README.md` | Este documento (processo de produção |
+| `README.md` | Este documento (processo de produção) |
 
 **Ordem sugerida de leitura:**
 
@@ -97,5 +95,3 @@ Caminhos dos arquivos entregues:
 3. `docs/RFC.md` — proposta consolidada
 4. `docs/FDD.md` — o "como construir"
 5. `docs/PRD.md` — o "porquê e o quê", por último (consolida tudo)
-
-> O enunciado original do desafio pode ser consultado no histórico do repositório ou em `git show <hash-do-commit-inicial>--README.md`.
