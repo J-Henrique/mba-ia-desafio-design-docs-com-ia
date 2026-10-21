@@ -18,7 +18,7 @@ A entrega é puramente documental: PRD, RFC, FDD, 6 ADRs, um Tracker de rastreab
 
 O trabalho seguiu a ordem sugerida pelo enunciado, mas com uma camada extra de governança: **regras de rastreabilidade definidas antes de qualquer documento ser escrito**.
 
-1. **Setup de contexto** — extraídas para `CLAUDE.md`, `.claude/rules/` e `.claude/memory/` as regras do desafio: formato de cada artefato, fronteiras entre documentos (PRD/RFC/FDD/ADRs/Tracker), regras de rastreabilidade e critérios de aceite.
+1. **Setup de contexto** — extraídas para `CLAUDE.md` e `.claude/rules/` as regras do desafio: formato de cada artefato, fronteiras entre documentos (PRD/RFC/FDD/ADRs/Tracker), regras de rastreabilidade e critérios de aceite.
 2. **Contextualização** — leitura completa da `TRANSCRICAO.md` e do código (`src/modules/orders/order.service.ts`, `order.status.ts`, `shared/errors`, middlewares, `schema.prisma`). Mapa mental da arquitetura e das 6 decisões principais.
 3. **ADRs primeiro** — produzidos os 6 ADRs (outbox, retry/DLQ, HMAC, at-least-once, worker separado, reuso de padrões).
 4. **RFC** — consolidação da proposta técnica em cima das decisões, com alternativas descartadas e questões em aberto.
@@ -48,7 +48,6 @@ sobre os timestamps:
 - garanta que não existem informações inventadas
 - é importante essa validação dos dois documentos para podermos garantir o rastreio de onde cada fato veio e é um requisito do desafio
 - ainda não remova o timestamps. Somente faça essas correções por enquanto
-```
 ```
 
 ## Iterações e ajustes

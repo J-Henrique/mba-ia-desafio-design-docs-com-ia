@@ -10,5 +10,4 @@ coverage/
 .vscode/
 *.tsbuildinfo
 
-CLAUDE.md
-.claude/
+.claude/memory/
